@@ -6,6 +6,7 @@
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
+#![allow(clippy::vec_init_then_push)]
 #![cfg_attr(bench, feature(test))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
