@@ -10,6 +10,10 @@ license = "MIT"
 rust-version = "1.51.0" # MSRV
 exclude = ["fuzz"]
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [features]
 default = ["std"]
 std = []
