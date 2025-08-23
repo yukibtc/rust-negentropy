@@ -20,6 +20,7 @@ pub(crate) enum Mode {
 }
 
 impl Mode {
+    #[inline]
     pub fn as_u64(&self) -> u64 {
         *self as u64
     }
@@ -64,6 +65,7 @@ impl Ord for Item {
 
 impl Item {
     /// new Item
+    #[inline]
     pub fn new() -> Self {
         Self::default()
     }
@@ -81,7 +83,8 @@ impl Item {
         Self { timestamp, id }
     }
 
-    /// get id
+    /// Get id
+    #[inline]
     pub fn get_id(&self) -> &Id {
         &self.id
     }
@@ -161,6 +164,7 @@ pub struct Fingerprint {
 
 impl Deref for Fingerprint {
     type Target = [u8; FINGERPRINT_SIZE];
+
     fn deref(&self) -> &Self::Target {
         &self.buf
     }
@@ -181,6 +185,7 @@ pub struct Accumulator {
 
 impl Accumulator {
     /// New Accumulator
+    #[inline]
     pub fn new() -> Self {
         Self { buf: [0; ID_SIZE] }
     }

@@ -111,11 +111,13 @@ impl NegentropyStorageVector {
     }
 
     /// Unseal
+    #[inline]
     pub fn unseal(&mut self) -> Result<(), Error> {
         self.sealed = false;
         Ok(())
     }
 
+    #[inline]
     fn check_sealed(&self) -> Result<(), Error> {
         if !self.sealed {
             return Err(Error::NotSealed);
@@ -123,6 +125,7 @@ impl NegentropyStorageVector {
         Ok(())
     }
 
+    #[inline]
     fn check_bounds(&self, begin: usize, end: usize) -> Result<(), Error> {
         if begin > end || end > self.items.len() {
             return Err(Error::BadRange);

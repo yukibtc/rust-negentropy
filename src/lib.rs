@@ -78,6 +78,7 @@ where
     /// Create new [`Negentropy`] instance from owned storage
     ///
     /// Frame size limit must be `equal to 0` or `greater than 4096`
+    #[inline]
     pub fn owned(storage: T, frame_size_limit: u64) -> Result<Self, Error> {
         Self::new(Storage::Owned(storage), frame_size_limit)
     }
@@ -85,6 +86,7 @@ where
     /// Create new [`Negentropy`] instance from owned storage
     ///
     /// Frame size limit must be `equal to 0` or `greater than 4096`
+    #[inline]
     pub fn borrowed(storage: &'a T, frame_size_limit: u64) -> Result<Self, Error> {
         Self::new(Storage::Borrowed(storage), frame_size_limit)
     }
@@ -105,11 +107,13 @@ where
     }
 
     /// Check if this instance has been used to create an initial message
+    #[inline]
     pub fn is_initiator(&self) -> bool {
         self.is_initiator
     }
 
     /// Set Initiator: for resuming initiation flow with a new instance
+    #[inline]
     pub fn set_initiator(&mut self) {
         self.is_initiator = true;
     }
@@ -357,6 +361,7 @@ where
         Ok(o)
     }
 
+    #[inline]
     fn exceeded_frame_size_limit(&self, n: usize) -> bool {
         self.frame_size_limit != 0 && n > (self.frame_size_limit as usize) - 200
     }
@@ -388,6 +393,7 @@ where
     }
 
     // Encoding
+    #[inline]
     fn encode_mode(&self, mode: Mode) -> Vec<u8> {
         encode_var_int(mode.as_u64())
     }
