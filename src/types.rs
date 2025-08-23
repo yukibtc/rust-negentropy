@@ -190,16 +190,6 @@ impl Accumulator {
         Self { buf: [0; ID_SIZE] }
     }
 
-    /* /// Add Item
-    pub fn add_item(&mut self, item: &Item) {
-        self.add(&item.id);
-    }
-
-    /// Add Accum
-    pub fn add_accum(&mut self, accum: &Accumulator) {
-        self.add(&accum.buf);
-    } */
-
     /// Add
     pub fn add(&mut self, buf: &[u8; ID_SIZE]) -> Result<(), Error> {
         let mut curr_carry = Wrapping(0u64);
@@ -235,35 +225,6 @@ impl Accumulator {
 
         Ok(())
     }
-
-    /* /// Negate
-    pub fn negate(&mut self) -> () {
-        for i in 0..ID_SIZE {
-            self.buf[i] = !self.buf[i];
-        }
-
-        let mut one = Accumulator::new();
-        one.buf[0] = 1u8;
-        self.add(&one.buf);
-    }
-
-    /// Sub Item
-    pub fn sub_item(&mut self, item: &Item) {
-        self.sub(&item.id);
-    }
-
-    /// Sub Accum
-    pub fn sub_accum(&mut self, accum: &Accumulator) {
-        self.sub(&accum.buf);
-    }
-
-    /// Sub
-    pub fn sub(&mut self, buf: &[u8; ID_SIZE]) -> () {
-        let mut neg = Accumulator::new();
-        neg.buf = *buf;
-        neg.negate();
-        self.add_accum(&neg);
-    } */
 
     /// Compute fingerprint, given set size
     pub fn get_fingerprint(&self, n: u64) -> Result<Fingerprint, Error> {
