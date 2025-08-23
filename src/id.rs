@@ -29,13 +29,13 @@ impl DerefMut for Id {
 impl Id {
     const LEN: usize = ID_SIZE;
 
-    /// Construct from byte array
+    /// Construct from a byte array
     #[deprecated(since = "1.0.0", note = "Use `from_byte_array` instead")]
     pub fn new(bytes: [u8; ID_SIZE]) -> Self {
         Self(bytes)
     }
 
-    /// Construct event ID from 32-byte array
+    /// Construct event ID from a 32-byte array
     #[inline]
     pub const fn from_byte_array(bytes: [u8; Self::LEN]) -> Self {
         Self(bytes)
@@ -43,7 +43,7 @@ impl Id {
 
     /// Construct from slice
     #[inline]
-    pub fn from_slice(slice: &[u8]) -> Result<Self, Error> {
+    pub const fn from_slice(slice: &[u8]) -> Result<Self, Error> {
         // Check len
         if slice.len() != Self::LEN {
             return Err(Error::InvalidIdSize);
@@ -59,13 +59,13 @@ impl Id {
 
     /// Return the inner value
     #[inline]
-    pub fn to_bytes(self) -> [u8; Self::LEN] {
+    pub const fn to_bytes(self) -> [u8; Self::LEN] {
         self.0
     }
 
     /// Return reference to the inner value
     #[inline]
-    pub fn as_bytes(&self) -> &[u8; Self::LEN] {
+    pub const fn as_bytes(&self) -> &[u8; Self::LEN] {
         &self.0
     }
 }

@@ -21,13 +21,14 @@ pub(crate) enum Mode {
 
 impl Mode {
     #[inline]
-    pub fn as_u64(&self) -> u64 {
+    pub(crate) fn as_u64(&self) -> u64 {
         *self as u64
     }
 }
 
 impl TryFrom<u64> for Mode {
     type Error = Error;
+
     fn try_from(mode: u64) -> Result<Self, Self::Error> {
         match mode {
             0 => Ok(Mode::Skip),
@@ -79,13 +80,13 @@ impl Item {
 
     /// new Item with timestamp and id
     #[inline]
-    pub fn with_timestamp_and_id(timestamp: u64, id: Id) -> Self {
+    pub const fn with_timestamp_and_id(timestamp: u64, id: Id) -> Self {
         Self { timestamp, id }
     }
 
     /// Get id
     #[inline]
-    pub fn get_id(&self) -> &Id {
+    pub const fn get_id(&self) -> &Id {
         &self.id
     }
 }

@@ -9,11 +9,11 @@ use core::convert::TryInto;
 use crate::error::Error;
 
 #[inline]
-pub fn get_byte_array<const N: usize>(encoded: &mut &[u8]) -> Result<[u8; N], Error> {
+pub(crate) fn get_byte_array<const N: usize>(encoded: &mut &[u8]) -> Result<[u8; N], Error> {
     Ok(get_bytes(encoded, N)?.try_into()?)
 }
 
-pub fn get_bytes<'a>(encoded: &'a mut &[u8], n: usize) -> Result<&'a [u8], Error> {
+pub(crate) fn get_bytes<'a>(encoded: &'a mut &[u8], n: usize) -> Result<&'a [u8], Error> {
     if encoded.len() < n {
         return Err(Error::ParseEndsPrematurely);
     }
@@ -22,7 +22,7 @@ pub fn get_bytes<'a>(encoded: &'a mut &[u8], n: usize) -> Result<&'a [u8], Error
     Ok(res)
 }
 
-pub fn decode_var_int(encoded: &mut &[u8]) -> Result<u64, Error> {
+pub(crate) fn decode_var_int(encoded: &mut &[u8]) -> Result<u64, Error> {
     let mut res = 0u64;
 
     for byte in encoded.iter() {
@@ -36,7 +36,7 @@ pub fn decode_var_int(encoded: &mut &[u8]) -> Result<u64, Error> {
     Ok(res)
 }
 
-pub fn encode_var_int(mut n: u64) -> Vec<u8> {
+pub(crate) fn encode_var_int(mut n: u64) -> Vec<u8> {
     if n == 0 {
         return vec![0];
     }
