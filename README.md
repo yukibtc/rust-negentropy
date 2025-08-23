@@ -1,9 +1,5 @@
 # Negentropy
 
-[![crates.io](https://img.shields.io/crates/v/negentropy.svg)](https://crates.io/crates/negentropy)
-[![crates.io - Downloads](https://img.shields.io/crates/d/negentropy)](https://crates.io/crates/negentropy)
-[![MIT](https://img.shields.io/crates/l/negentropy.svg)](./LICENSE)
-
 ## Description
 
 Rust implementation of the [negentropy](https://github.com/hoytech/negentropy) set-reconciliation protocol.
@@ -11,6 +7,10 @@ Rust implementation of the [negentropy](https://github.com/hoytech/negentropy) s
 ## Minimum Supported Rust Version (MSRV)
 
 These crates are built with the Rust language version `2018` and require a minimum compiler version of `1.51.0`
+
+## Changelog
+
+All notable changes to this library are documented in the [CHANGELOG.md](CHANGELOG.md).
 
 ## Flame Graph and perf
 
