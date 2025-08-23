@@ -14,81 +14,53 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - run: cargo fmt --all -- --config format_code_in_doc_comments=true --check
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install nightly toolchain
+        run: rustup install nightly
+
+      - name: Add rustfmt for nightly
+        run: rustup component add rustfmt --toolchain nightly
+
+      - name: Check
+        run: cargo +nightly fmt --all --check -- --config format_code_in_doc_comments=true
 
   build:
-    name: Build negentropy
+    name: Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./negentropy
     strategy:
       matrix:
         rust:
           - version: stable # STABLE
           - version: 1.51.0 # MSRV
         build-args:
-          [
-            "",
-            "--no-default-features",
-            "--target wasm32-unknown-unknown"
-          ]
+          - ""
+          - "--no-default-features"
+          - "--target wasm32-unknown-unknown"
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
-    - name: Cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml','**/Cargo.lock') }}
+      uses: actions/checkout@v4
+
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.7.8
+
     - name: Set default toolchain
       run: rustup default ${{ matrix.rust.version }}
+
     - name: Add WASM
       if: ${{ matrix.build-args == '--target wasm32-unknown-unknown' }}
       run: rustup target add wasm32-unknown-unknown
+
     - name: Set profile
       run: rustup set profile minimal && rustup component add clippy
+
     - name: Build
       run: cargo build ${{ matrix.build-args }}
+
     - name: Tests
       if: ${{ matrix.build-args != '--target wasm32-unknown-unknown' }}
       run: cargo test ${{ matrix.build-args }}
-    - name: Clippy
-      if: ${{ matrix.rust.version != '1.51.0' }}
-      run: cargo clippy ${{ matrix.build-args }} -- -D warnings
 
-  build-ffi:
-    name: Build FFI
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./negentropy-ffi
-    strategy:
-      matrix:
-        rust:
-          - version: stable # STABLE
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-ffi-${{ hashFiles('**/Cargo.toml','**/Cargo.lock') }}
-    - name: Set default toolchain
-      run: rustup default ${{ matrix.rust.version }}
-    - name: Set profile
-      run: rustup set profile minimal && rustup component add clippy
-    - name: Build
-      run: cargo build
-    - name: Tests
-      run: cargo test
     - name: Clippy
-      run: cargo clippy -- -D warnings
+      run: cargo clippy ${{ matrix.build-args }} -- -D warnings
