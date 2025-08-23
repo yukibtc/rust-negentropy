@@ -58,9 +58,9 @@ impl<'a, T> Negentropy<'a, T>
 where
     T: NegentropyStorageBase,
 {
-    /// Create new [`Negentropy`] instance
+    /// Create a new [`Negentropy`] instance.
     ///
-    /// Frame size limit must be `equal to 0` or `greater than 4096`
+    /// Frame size limit must be `equal to 0` or `greater than 4096`.
     pub fn new(storage: Storage<'a, T>, frame_size_limit: u64) -> Result<Self, Error> {
         if frame_size_limit != 0 && frame_size_limit < 4096 {
             return Err(Error::FrameSizeLimitTooSmall);
@@ -75,7 +75,7 @@ where
         })
     }
 
-    /// Create new [`Negentropy`] instance from owned storage
+    /// Create a new [`Negentropy`] instance from **owned** storage.
     ///
     /// Frame size limit must be `equal to 0` or `greater than 4096`
     #[inline]
@@ -83,9 +83,9 @@ where
         Self::new(Storage::Owned(storage), frame_size_limit)
     }
 
-    /// Create new [`Negentropy`] instance from owned storage
+    /// Create a new [`Negentropy`] instance from **borrowed** storage.
     ///
-    /// Frame size limit must be `equal to 0` or `greater than 4096`
+    /// Frame size limit must be `equal to 0` or `greater than 4096`.
     #[inline]
     pub fn borrowed(storage: &'a T, frame_size_limit: u64) -> Result<Self, Error> {
         Self::new(Storage::Borrowed(storage), frame_size_limit)
@@ -98,7 +98,8 @@ where
         }
         self.is_initiator = true;
 
-        let bytes: Vec<u8> = self.split_range(0, self.storage.size()?, Bound::with_timestamp(MAX_U64))?;
+        let bytes: Vec<u8> =
+            self.split_range(0, self.storage.size()?, Bound::with_timestamp(MAX_U64))?;
 
         let mut output: Vec<u8> = Vec::with_capacity(1 + bytes.len());
         output.push(PROTOCOL_VERSION as u8);
@@ -368,7 +369,7 @@ where
     }
 
     // Decoding
-
+    #[inline]
     fn decode_mode(&self, encoded: &mut &[u8]) -> Result<Mode, Error> {
         let mode = decode_var_int(encoded)?;
         Mode::try_from(mode)
