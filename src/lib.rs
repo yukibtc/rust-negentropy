@@ -98,10 +98,11 @@ where
         }
         self.is_initiator = true;
 
-        let mut output: Vec<u8> = Vec::new();
-        output.push(PROTOCOL_VERSION as u8);
+        let bytes: Vec<u8> = self.split_range(0, self.storage.size()?, Bound::with_timestamp(MAX_U64))?;
 
-        output.extend(self.split_range(0, self.storage.size()?, Bound::with_timestamp(MAX_U64))?);
+        let mut output: Vec<u8> = Vec::with_capacity(1 + bytes.len());
+        output.push(PROTOCOL_VERSION as u8);
+        output.extend(bytes);
 
         Ok(output)
     }
