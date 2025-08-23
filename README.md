@@ -14,7 +14,7 @@ All notable changes to this library are documented in the [CHANGELOG.md](CHANGEL
 
 ## Flame Graph and perf
 
-Install [flamegraph](https://github.com/flamegraph-rs/flamegraph) and then run `make graph`. 
+Install [flamegraph](https://github.com/flamegraph-rs/flamegraph) and then run `just graph`. 
 You'll find a new file in the project root called `flamegraph.svg`: open it in a browser.
 
 In the terminal you should see something like:
@@ -30,7 +30,7 @@ Client reconcile took 39 ms
 
 ## Benchmarks (unstable)
 
-To run the benchmarks use: `make bench`
+To run the benchmarks use: `just bench`
 
 ## Donations
 
