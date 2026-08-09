@@ -5,7 +5,6 @@
 use alloc::vec::Vec;
 use core::cmp::Ordering;
 use core::convert::{TryFrom, TryInto};
-use core::num::Wrapping;
 use core::ops::Deref;
 
 use crate::encoding::encode_var_int;
@@ -193,36 +192,24 @@ impl Accumulator {
 
     /// Add
     pub fn add(&mut self, buf: &[u8; ID_SIZE]) -> Result<(), Error> {
-        let mut curr_carry = Wrapping(0u64);
-        let mut next_carry = Wrapping(0u64);
-
-        let p = &self.buf[..];
-        let po = buf;
-
-        let mut wtr = Vec::with_capacity(ID_SIZE);
+        // 256-bit little-endian add, four 64-bit lanes with carry. Both inputs
+        // are fixed-size arrays, so the lane splits cannot fail, and the result
+        // is written straight back rather than through a scratch copy.
+        let mut carry: u64 = 0;
 
         for i in 0..4 {
-            let orig = Wrapping(u64::from_le_bytes(p[(i * 8)..(i * 8 + 8)].try_into()?));
-            let other_v = Wrapping(u64::from_le_bytes(po[(i * 8)..(i * 8 + 8)].try_into()?));
+            let lo: usize = i * 8;
+            let hi: usize = lo + 8;
 
-            let mut next = orig;
+            let a: u64 = u64::from_le_bytes(self.buf[lo..hi].try_into()?);
+            let b: u64 = u64::from_le_bytes(buf[lo..hi].try_into()?);
 
-            next += curr_carry;
-            if next < orig {
-                next_carry = Wrapping(1u64);
-            }
+            let (sum, c1) = a.overflowing_add(b);
+            let (sum, c2) = sum.overflowing_add(carry);
 
-            next += other_v;
-            if next < other_v {
-                next_carry = Wrapping(1u64);
-            }
-
-            wtr.extend_from_slice(&next.0.to_le_bytes());
-            curr_carry = next_carry;
-            next_carry = Wrapping(0u64);
+            self.buf[lo..hi].copy_from_slice(&sum.to_le_bytes());
+            carry = (c1 | c2) as u64;
         }
-
-        self.buf.copy_from_slice(&wtr);
 
         Ok(())
     }
@@ -240,5 +227,91 @@ impl Accumulator {
         Ok(Fingerprint {
             buf: hash[0..FINGERPRINT_SIZE].try_into()?,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A carry leaving one 64-bit lane must land in the next one.
+    #[test]
+    fn test_accumulator_carry_between_lanes() {
+        for lane in 0..3 {
+            let mut acc = Accumulator::new();
+
+            let mut full_lane = [0u8; ID_SIZE];
+            full_lane[lane * 8..(lane + 1) * 8].copy_from_slice(&u64::MAX.to_le_bytes());
+            acc.add(&full_lane).unwrap();
+
+            let mut one = [0u8; ID_SIZE];
+            one[lane * 8] = 1;
+            acc.add(&one).unwrap();
+
+            let mut expected = [0u8; ID_SIZE];
+            expected[(lane + 1) * 8] = 1;
+            assert_eq!(acc.buf, expected, "carry out of lane {}", lane);
+        }
+    }
+
+    /// An incoming carry can overflow a lane on its own, when that lane's two
+    /// operands already sum to `u64::MAX`. Both overflow sources must be
+    /// propagated, not just the one from adding the operands.
+    #[test]
+    fn test_accumulator_carry_propagates_through_full_lane() {
+        let mut acc = Accumulator::new();
+
+        let mut lanes = [0u8; ID_SIZE];
+        lanes[0..8].copy_from_slice(&u64::MAX.to_le_bytes());
+        lanes[8..16].copy_from_slice(&u64::MAX.to_le_bytes());
+        acc.add(&lanes).unwrap();
+
+        let mut one = [0u8; ID_SIZE];
+        one[0] = 1;
+        acc.add(&one).unwrap();
+
+        // Lane 0 wraps to zero, its carry wraps lane 1 to zero in turn, and
+        // that second carry reaches lane 2.
+        let mut expected = [0u8; ID_SIZE];
+        expected[16] = 1;
+        assert_eq!(acc.buf, expected);
+    }
+
+    /// A carry out of the top lane is discarded: the sum is modulo 2^256.
+    #[test]
+    fn test_accumulator_wraps_at_256_bits() {
+        let mut acc = Accumulator::new();
+        acc.add(&[0xFF; ID_SIZE]).unwrap();
+
+        let mut one = [0u8; ID_SIZE];
+        one[0] = 1;
+        acc.add(&one).unwrap();
+
+        assert_eq!(acc.buf, [0u8; ID_SIZE]);
+    }
+
+    /// Range fingerprints are computed by summing ids in storage order, while
+    /// the peer may sum the same ids in a different order, so the accumulator
+    /// must not depend on the order it is fed.
+    #[test]
+    fn test_accumulator_is_order_independent() {
+        let ids: [[u8; ID_SIZE]; 4] = [
+            [0x11; ID_SIZE],
+            [0xFF; ID_SIZE],
+            [0x00; ID_SIZE],
+            [0xA5; ID_SIZE],
+        ];
+
+        let mut forward = Accumulator::new();
+        for id in ids.iter() {
+            forward.add(id).unwrap();
+        }
+
+        let mut backward = Accumulator::new();
+        for id in ids.iter().rev() {
+            backward.add(id).unwrap();
+        }
+
+        assert_eq!(forward.buf, backward.buf);
     }
 }
