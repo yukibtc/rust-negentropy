@@ -104,7 +104,11 @@ impl NegentropyStorageVector {
         }
         self.sealed = true;
 
-        self.items.sort();
+        // `Item` orders on timestamp then id, so elements comparing equal are
+        // byte-identical and the `dedup()` below discards them either way.
+        // Stability is therefore unobservable, and an unstable sort avoids the
+        // scratch buffer that the stable sort allocates for the whole slice.
+        self.items.sort_unstable();
         self.items.dedup();
 
         Ok(())
@@ -181,5 +185,48 @@ impl NegentropyStorageBase for NegentropyStorageVector {
         }
 
         first
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// After sealing, items are strictly increasing and exact duplicates are
+    /// gone. Nothing survives that compares equal to its neighbour, which is
+    /// what makes the sort's treatment of equal elements unobservable.
+    #[test]
+    fn test_seal_orders_and_collapses_duplicates() {
+        let mut storage = NegentropyStorageVector::new();
+
+        // Ids shared across timestamps, timestamps shared across ids, and two
+        // exact duplicates, all inserted out of order.
+        let entries: [(u64, u8); 7] = [
+            (7, 0x22),
+            (3, 0x11),
+            (7, 0x11),
+            (3, 0x11),
+            (1, 0xFF),
+            (7, 0x22),
+            (3, 0x22),
+        ];
+
+        for (timestamp, byte) in entries.iter() {
+            storage
+                .insert(*timestamp, Id::from_byte_array([*byte; 32]))
+                .unwrap();
+        }
+        storage.seal().unwrap();
+
+        assert_eq!(storage.size().unwrap(), 5);
+
+        let mut previous: Option<Item> = None;
+        for i in 0..storage.size().unwrap() {
+            let item: Item = storage.get_item(i).unwrap().unwrap();
+            if let Some(previous) = previous {
+                assert!(previous < item, "not strictly increasing at index {}", i);
+            }
+            previous = Some(item);
+        }
     }
 }
