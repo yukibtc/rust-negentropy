@@ -218,7 +218,7 @@ where
                     }
                 }
                 Mode::IdList => {
-                    let num_ids: u64 = decode_var_int(&mut query)?;
+                    let num_ids: u64 = decode_var_int(&mut query);
 
                     #[cfg(feature = "std")]
                     let mut their_elems: HashSet<Id> = HashSet::with_capacity(num_ids as usize);
@@ -372,12 +372,12 @@ where
     // Decoding
     #[inline]
     fn decode_mode(&self, encoded: &mut &[u8]) -> Result<Mode, Error> {
-        let mode = decode_var_int(encoded)?;
+        let mode = decode_var_int(encoded);
         Mode::try_from(mode)
     }
 
     fn decode_timestamp_in(&mut self, encoded: &mut &[u8]) -> Result<u64, Error> {
-        let timestamp: u64 = decode_var_int(encoded)?;
+        let timestamp: u64 = decode_var_int(encoded);
         let mut timestamp = if timestamp == 0 {
             MAX_U64
         } else {
@@ -390,7 +390,7 @@ where
 
     fn decode_bound(&mut self, encoded: &mut &[u8]) -> Result<Bound, Error> {
         let timestamp = self.decode_timestamp_in(encoded)?;
-        let len: usize = decode_var_int(encoded)? as usize;
+        let len: usize = decode_var_int(encoded) as usize;
         let id: &[u8] = get_bytes(encoded, len)?;
         Bound::with_timestamp_and_id(timestamp, id)
     }

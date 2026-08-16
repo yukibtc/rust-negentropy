@@ -22,8 +22,8 @@ pub(crate) fn get_bytes<'a>(encoded: &'a mut &[u8], n: usize) -> Result<&'a [u8]
     Ok(res)
 }
 
-pub(crate) fn decode_var_int(encoded: &mut &[u8]) -> Result<u64, Error> {
-    let mut res = 0u64;
+pub(crate) fn decode_var_int(encoded: &mut &[u8]) -> u64 {
+    let mut res: u64 = 0;
 
     for byte in encoded.iter() {
         *encoded = &encoded[1..];
@@ -33,7 +33,7 @@ pub(crate) fn decode_var_int(encoded: &mut &[u8]) -> Result<u64, Error> {
         }
     }
 
-    Ok(res)
+    res
 }
 
 pub(crate) fn encode_var_int(mut n: u64) -> Vec<u8> {
