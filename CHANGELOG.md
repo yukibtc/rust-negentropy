@@ -21,4 +21,15 @@
 
 ### Deprecated
 
+### Performance
+
+### Security
+
 -->
+
+## 0.5.1 - 2026/08/16
+
+### Performance
+
+- Remove the per-item heap allocation from `Accumulator::add` (https://github.com/nostrdevkit/negentropy/pull/12)
+- Avoid the sort scratch allocation in `NegentropyStorageVector::seal` (https://github.com/nostrdevkit/negentropy/pull/13)
