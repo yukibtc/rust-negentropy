@@ -19,4 +19,4 @@ of the PR were done in a specific way -->
 #### All Submissions:
 
 * [ ] I followed the [contribution guidelines](../CONTRIBUTING.md)
-* [ ] I ran `make precommit` before committing
+* [ ] I ran `just precommit` before committing
