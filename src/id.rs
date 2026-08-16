@@ -49,9 +49,12 @@ impl Id {
             return Err(Error::InvalidIdSize);
         }
 
-        // Copy bytes
         let mut bytes: [u8; Self::LEN] = [0u8; Self::LEN];
-        bytes.copy_from_slice(slice);
+        let mut i: usize = 0;
+        while i < Self::LEN {
+            bytes[i] = slice[i];
+            i += 1;
+        }
 
         // Construct
         Ok(Self::from_byte_array(bytes))
